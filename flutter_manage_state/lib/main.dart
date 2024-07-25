@@ -1,7 +1,4 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 class TapboxA extends StatefulWidget {
   const TapboxA({super.key});
@@ -61,7 +58,7 @@ class _ParentWidgetState extends State<ParentWidget> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      child: TapboxB(
+      child: TapboxC(
         active: _active,
         onChanged: _handleTapChanged,
       ),
@@ -69,8 +66,8 @@ class _ParentWidgetState extends State<ParentWidget> {
   }
 }
 
-class TapboxB extends StatelessWidget {
-  const TapboxB({
+class TapboxC extends StatefulWidget {
+  const TapboxC({
     super.key,
     this.active = false,
     required this.onChanged,
@@ -79,23 +76,54 @@ class TapboxB extends StatelessWidget {
   final bool active;
   final ValueChanged<bool> onChanged;
 
+  @override
+  State<TapboxC> createState() => _TapboxCState();
+}
+
+class _TapboxCState extends State<TapboxC> {
+  bool _highlights = false;
+
+  void _hadleTapDown(TapDownDetails details) {
+    setState(() {
+      _highlights = true;
+    });
+  }
+
+  void _handleTapUp(TapUpDetails details) {
+    setState(() {
+      _highlights = false;
+    });
+  }
+
+  void _handleTapCancel() {
+    setState(() {
+      _highlights = false;
+    });
+  }
+
   void _handleTap() {
-    onChanged(!active);
+    widget.onChanged(!widget.active);
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTapDown: _hadleTapDown,
+      onTapUp: _handleTapUp,
+      onTapCancel: _handleTapCancel,
       onTap: _handleTap,
       child: Container(
         width: 200,
         height: 200,
         decoration: BoxDecoration(
-          color: active ? Colors.lightGreen[700] : Colors.grey[400],
+          color: widget.active ? Colors.lightGreen[700] : Colors.grey[400],
+          border: _highlights
+              ? Border.all(color: Colors.teal[700]!, width: 10)
+              : null,
         ),
         child: Center(
           child: Text(
-            active ? 'Active' : 'Inactive',
+            widget.active ? 'Active' : 'Inactive',
             style: const TextStyle(fontSize: 32, color: Colors.white),
           ),
         ),
@@ -127,6 +155,11 @@ class MyApp extends StatelessWidget {
                 child: ParentWidget(),
               ),
             ),
+            SizedBox(
+              child: Center(
+                child: ParentWidget(),
+              ),
+            )
           ],
         ),
       ),
