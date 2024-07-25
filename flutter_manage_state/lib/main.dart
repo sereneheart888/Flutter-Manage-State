@@ -1,4 +1,7 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 class TapboxA extends StatefulWidget {
   const TapboxA({super.key});
@@ -37,6 +40,70 @@ class _TapboxAState extends State<TapboxA> {
   }
 }
 
+// For managing state its parent.
+
+class ParentWidget extends StatefulWidget {
+  const ParentWidget({super.key});
+
+  @override
+  State<ParentWidget> createState() => _ParentWidgetState();
+}
+
+class _ParentWidgetState extends State<ParentWidget> {
+  bool _active = false;
+
+  void _handleTapChanged(bool newValue) {
+    setState(() {
+      _active = newValue;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      child: TapboxB(
+        active: _active,
+        onChanged: _handleTapChanged,
+      ),
+    );
+  }
+}
+
+class TapboxB extends StatelessWidget {
+  const TapboxB({
+    super.key,
+    this.active = false,
+    required this.onChanged,
+  });
+
+  final bool active;
+  final ValueChanged<bool> onChanged;
+
+  void _handleTap() {
+    onChanged(!active);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _handleTap,
+      child: Container(
+        width: 200,
+        height: 200,
+        decoration: BoxDecoration(
+          color: active ? Colors.lightGreen[700] : Colors.grey[400],
+        ),
+        child: Center(
+          child: Text(
+            active ? 'Active' : 'Inactive',
+            style: const TextStyle(fontSize: 32, color: Colors.white),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -48,8 +115,19 @@ class MyApp extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Flutter Demo'),
         ),
-        body: const Center(
-          child: TapboxA(),
+        body: ListView(
+          children: const <Widget>[
+            SizedBox(
+              child: Center(
+                child: TapboxA(),
+              ),
+            ),
+            SizedBox(
+              child: Center(
+                child: ParentWidget(),
+              ),
+            ),
+          ],
         ),
       ),
     );
